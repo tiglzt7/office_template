@@ -1,0 +1,320 @@
+Sub ExtractLeftEightCharacters()
+    Dim rng As Range
+    Dim cell As Range
+
+    '選択範囲を取得
+    Set rng = Application.Selection
+
+    '各セルに対して処理を実行
+    For Each cell In rng
+        'セルの値を文字列に変換し、左から8文字を取得
+        cell.Value = Left(CStr(cell.Value), 8)
+    Next cell
+End Sub
+
+
+Sub ZeroPaddingToEightCharacters()
+    Dim rng As Range
+    Dim cell As Range
+
+    '選択範囲を取得
+    Set rng = Application.Selection
+
+    '各セルに対して処理を実行
+    For Each cell In rng
+        'セルの書式を文字列に設定
+        cell.NumberFormat = "@"
+        'セルの値を文字列に変換し、左側を0で埋めて8桁にする
+        cell.Value = Right("00000000" & CStr(cell.Value), 8)
+    Next cell
+End Sub
+
+
+Sub ZeroPaddingToElevenCharacters()
+    Dim rng As Range
+    Dim cell As Range
+
+    '選択範囲を取得
+    Set rng = Application.Selection
+
+    '各セルに対して処理を実行
+    For Each cell In rng
+        'セルの書式を文字列に設定
+        cell.NumberFormat = "@"
+        'セルの値を文字列に変換し、右側を0で埋めて11桁にする
+        cell.Value = Left(CStr(cell.Value) & "00000000000", 11)
+    Next cell
+End Sub
+
+
+Sub CombineSelectedColumns()
+
+    ' 選択された範囲を取得
+    Dim rng As Range
+    Set rng = Selection
+
+    ' 最初の選択範囲の開始行を取得
+    Dim startRow As Long
+    startRow = rng.Areas(1).Row
+
+    ' 結果を格納する新しい列を作成
+    Dim resultCol As Range
+    Set resultCol = rng.Parent.Cells(startRow, rng.Parent.Columns.Count).End(xlToLeft).Offset(0, 1)
+
+    Dim rowIdx As Long
+    For rowIdx = 1 To rng.Rows.Count
+        Dim combinedValue As String
+        combinedValue = ""
+
+        ' 選択範囲の各領域に対してループを実行
+        Dim area As Range
+        For Each area In rng.Areas
+            
+            Dim colIdx As Long
+            For colIdx = 1 To area.Columns.Count
+                ' 選択された列の値を結合
+                combinedValue = combinedValue & area.Cells(rowIdx, colIdx).Value
+            Next colIdx
+
+        Next area
+
+        ' 結果を新しい列に書き込む
+        resultCol.Cells(rowIdx, 1).Value = combinedValue
+    Next rowIdx
+
+End Sub
+
+
+Sub RemoveDuplicatesWithCondition()
+
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim LastRow As Long
+    Dim i As Long
+    
+    Set ws = ActiveSheet
+    LastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row ' A列の最終行を探します。"A"をデータの開始地点に合わせて調整してください。
+
+    ' 一時的な列を作成します。ここではZ列を使用していますが、使用していない任意の列を選んでください。
+    ws.Range("Z1:Z" & LastRow).ClearContents ' 初めて使用する前に一時的な列をクリアします。
+    
+    For i = 2 To LastRow
+        If Application.WorksheetFunction.CountIf(ws.Range("A2:A" & LastRow), ws.Cells(i, "A").Value) > 1 And ws.Cells(i, "B").Value <> 1 Then
+            ' "A"は"先品"の列、"B"は"L1"の列に対応しています。このマクロの中で列指定を行う際は、これらの値を自分のデータに合わせて調整してください。
+            ws.Cells(i, "Z").Value = "DELETE" ' 一時的な列に"DELETE"のマークをつけます。
+        End If
+    Next i
+    
+    ' 一時的な列に基づいて行を削除します。
+    For i = LastRow To 2 Step -1
+        If ws.Cells(i, "Z").Value = "DELETE" Then
+            ws.Rows(i).Delete
+        End If
+    Next i
+
+    ' 一時的な列をクリアします。
+    ws.Range("Z1:Z" & LastRow).ClearContents
+
+End Sub
+
+
+Sub SplitCellsAtFirstSpace()
+    Dim rng As Range
+    Dim cell As Range
+    Dim txt As String
+    Dim splitText() As String
+    Dim ws As Worksheet
+
+    Set rng = Application.Selection
+    Set ws = ActiveSheet
+
+    '新しい列を作成
+    ws.Columns(rng.Columns.Count + rng.Column).Insert Shift:=xlToRight
+    ws.Columns(rng.Columns.Count + rng.Column).Insert Shift:=xlToRight
+
+    For Each cell In rng
+        If Not IsEmpty(cell) Then
+            txt = cell.Value
+            splitText = Split(txt, " ", 2)  '最初のスペースでテキストを分割
+            ws.Cells(cell.Row, rng.Column + rng.Columns.Count).Value = splitText(0)  '分割された最初の部分を新しいセルに配置
+            If UBound(splitText) > 0 Then  '2つ以上の部分がある場合
+                ws.Cells(cell.Row, rng.Column + rng.Columns.Count + 1).Value = splitText(1)  '分割された2番目の部分をさらに新しいセルに配置
+            End If
+        End If
+    Next cell
+End Sub
+
+
+Sub FillFirstRow()
+
+    ' 列名を配列として定義
+    Dim colNames As Variant
+    colNames = Array("列1", _
+                     "列2", _
+                     "列3", _
+                     "列4", _
+                     "列5", _
+                     "列6", _
+                     "列7", _
+                     "列8", _
+                     "列9", _
+                     "列10")
+    
+    ' 1行目の各列に値を設定
+    Dim i As Integer
+    For i = 1 To 10
+        Cells(1, i).Value = colNames(i - 1)
+    Next i
+
+End Sub
+
+
+Sub ShowUserForm()
+    UserForm1.Show  ' UserForm1は実際のユーザーフォーム名に置き換えてください
+End Sub
+
+
+Sub 全てのシートをハイパーリンク挿入()
+
+Dim ws As Worksheet
+Dim i As Long
+
+   i = 1
+
+   'シートをループ
+   For Each ws In Worksheets
+     ActiveSheet.Hyperlinks.Add Anchor:=Cells(i, 1), Address:="", SubAddress:= _
+      ws.Name & "!A1", TextToDisplay:=ws.Name
+
+     i = i + 1
+   Next
+
+End Sub
+
+
+Sub ListFilesAndCheckNamesAgainstSelection()
+    Dim objFSO As Object
+    Dim objFolder As Object
+    Dim outputSheet As Worksheet
+    Dim i As Integer
+    Dim strFolderPath As String
+    Dim selectedCells As Range
+    Dim maxDepth As Integer
+
+    ' 選択されたセルの範囲を取得
+    Set selectedCells = Selection
+    Set selectedCells = RemoveBlankCells(selectedCells)
+
+    ' フォルダ選択ダイアログを表示
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        If .Show = -1 Then
+            strFolderPath = .SelectedItems(1)
+        Else
+            MsgBox "フォルダが選択されませんでした。", vbExclamation
+            Exit Sub
+        End If
+    End With
+
+    ' 探索する階層の深さをユーザーに尋ねる
+    maxDepth = InputBox("何階層下まで探索しますか？", "探索階層の指定", 1)
+    If Not IsNumeric(maxDepth) Or maxDepth < 0 Then
+        MsgBox "正しい階層の深さを入力してください。", vbExclamation
+        Exit Sub
+    End If
+
+    ' 新しいシートを作成
+    Set outputSheet = Worksheets.Add
+    outputSheet.Name = "ファイルリスト"
+
+    ' ヘッダーを追加
+    With outputSheet
+        .Cells(1, 1).Value = "フルパス"
+        .Cells(1, 2).Value = "ファイル名"
+        .Cells(1, 3).Value = "拡張子"
+        .Cells(1, 4).Value = "含まれているか"
+    End With
+
+    ' FileSystemObjectを作成してフォルダを取得
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    Set objFolder = objFSO.GetFolder(strFolderPath)
+
+    ' ファイル一覧を取得してチェックを開始
+    i = 2 ' ヘッダーの次の行から開始
+    ListFiles objFolder, selectedCells, outputSheet, i, maxDepth, 0
+
+    ' 結果シートをアクティブにする
+    outputSheet.Activate
+
+    ' 完了メッセージ
+    MsgBox i - 2 & " 個のファイルを新しいシートにリストアップしました。", vbInformation
+
+    ' オブジェクトの解放
+    Set objFSO = Nothing
+    Set objFolder = Nothing
+    Set outputSheet = Nothing
+    Set selectedCells = Nothing
+End Sub
+
+' 空白セルを除外する関数
+Function RemoveBlankCells(rng As Range) As Range
+    Dim cell As Range
+    Dim tempRange As Range
+    For Each cell In rng
+        If cell.Value <> "" Then
+            If tempRange Is Nothing Then
+                Set tempRange = cell
+            Else
+                Set tempRange = Union(tempRange, cell)
+            End If
+        End If
+    Next cell
+    Set RemoveBlankCells = tempRange
+End Function
+
+' フォルダとそのサブフォルダ内のファイルをリストアップする再帰関数
+Sub ListFiles(ByVal objFolder As Object, ByVal selectedCells As Range, ByRef outputSheet As Worksheet, ByRef i As Integer, ByVal maxDepth As Integer, ByVal currentDepth As Integer)
+    Dim objFSO As Object
+    Dim objSubFolder As Object
+    Dim objFile As Object
+    Dim fileName As String
+    Dim containsSelectedValue As Boolean
+    
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    ' 現在のフォルダ内のファイルを処理
+    For Each objFile In objFolder.Files
+        fileName = objFSO.GetBaseName(objFile)
+        containsSelectedValue = False
+        
+        ' 選択されたセルにファイル名が含まれているかチェック
+        For Each cell In selectedCells
+            If InStr(1, fileName, cell.Value, vbTextCompare) > 0 Then
+                containsSelectedValue = True
+                Exit For
+            End If
+        Next cell
+        
+        ' 新しいシートに情報を出力
+        With outputSheet
+            .Cells(i, 1).Value = objFile.Path ' フルパス
+            .Cells(i, 2).Value = fileName ' ファイル名
+            .Cells(i, 3).Value = objFSO.GetExtensionName(objFile) ' 拡張子
+            .Cells(i, 4).Value = containsSelectedValue ' 含まれているか
+        End With
+        
+        i = i + 1
+    Next objFile
+    
+    ' 指定された深さに達していなければ下位フォルダを探索
+    If currentDepth < maxDepth Then
+        For Each objSubFolder In objFolder.SubFolders
+            ListFiles objSubFolder, selectedCells, outputSheet, i, maxDepth, currentDepth + 1
+        Next objSubFolder
+    End If
+    
+    ' オブジェクトの解放
+    Set objFSO = Nothing
+End Sub
+
+
+
